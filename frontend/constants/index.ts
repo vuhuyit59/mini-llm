@@ -1,0 +1,7 @@
+export const DEFAULT_PAGE_SIZE = 10;
+export enum PromptRequestStatusEnum {
+  INITIAL = 'INITIAL',
+  PROCESSING = 'PROCESSING',
+  FINISHED = 'FINISHED',
+  AI_CONTENT_CREATED = 'AI_CONTENT_CREATED',
+}

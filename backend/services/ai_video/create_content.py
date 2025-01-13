@@ -4,6 +4,10 @@ import base64
 from dotenv import load_dotenv
 import os
 from PIL import Image
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from backend.models import AiVideoRequestModel
+from backend.services.bytescale import upload_file
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.makedirs(f"{current_dir}/input", exist_ok=True)
@@ -18,7 +22,7 @@ client = OpenAI(
 )
 
 
-def create_narration(sample_input):
+def create_narration(sample_input: str):
     """
     request create narration
 
@@ -38,13 +42,7 @@ def create_narration(sample_input):
         return None
 
 
-def create_voice(voice_input, audio_output):
-    """
-    request create voice
-
-    voice_input: string
-    audio_output: string
-    """
+def create_voice(voice_input: str, audio_output: str):
     try:
         unused_list = re.findall(r"(Narration.*:)", voice_input)
         need_to_remove_phase = unused_list[0] if len(unused_list) > 0 else None
@@ -63,13 +61,7 @@ def create_voice(voice_input, audio_output):
         return None
 
 
-def create_image(image_des, output_image):
-    """
-    request create image
-
-    image_des: string
-    output_image: string
-    """
+def create_image(image_des: str, output_image: str):
     try:
         response = client.images.generate(
             model="dall-e-3",
@@ -88,17 +80,15 @@ def create_image(image_des, output_image):
         return None
 
 
-def create_content_file(sample_input):
-    """
-    request create content file
-
-    sample_input: string
-    """
+async def create_content_file(ai_video_request: AiVideoRequestModel,
+                              session: AsyncSession):
     print("Creating narration ....")
-    content = create_narration(sample_input)
+    content = create_narration(ai_video_request.input_sample)
     if not content:
         return
-
+    ai_video_request.process_percent = 10
+    ai_video_request.narration = content
+    await session.commit()
     # Extract prompts
     image_description_list = re.findall(r"\[(.*?)\]", content)
     script_list = re.findall(r"\((.*?)\)", content)
@@ -129,6 +119,16 @@ def create_content_file(sample_input):
             new_visual_file_name))
     os.remove(visual_file_name)
 
+    # Upload image and save process percent
+    with open(new_visual_file_name, "rb") as imf:
+        file_url = upload_file(imf)
+        if file_url:
+            ai_video_request.image_url = file_url
+            ai_video_request.process_percent = 15
+            await session.commit()
+
+    os.remove(new_visual_file_name)
+
     # create images
     image_file_list = []
     len_img_des = len(image_description_list)
@@ -139,6 +139,8 @@ def create_content_file(sample_input):
         if temp:
             image_file_list.append(temp)
 
+    ai_video_request.process_percent = 30
+    await session.commit()
     # create voices
     voice_file_list = []
     len_script_des = len(script_list)

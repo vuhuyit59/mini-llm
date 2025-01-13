@@ -14,88 +14,40 @@
 
 ## Installation
 
-Before running this project, ensure you have the following installed:
-
--   [Docker](https://www.docker.com/get-started)
--   [Docker Compose](https://docs.docker.com/compose/install/)
-
 1. Clone the repository:
    ```bash
    git clone https://github.com/vuhuyit59/mini-llm
    cd mini-llm
    ```
 
-### 2. Environment Variables
+2. Set up a virtual environment (optional but recommended):
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+   ```
 
-Create a `.env` file in the project's root directory by copying and customizing the settings from `.env.sample`.
-
-### 3. Build and Start the Services
-
-Run the following command to build and start all services:
-
-```bash
-docker-compose up --build
-
-```
-
-This command will:
-
-1.  Build the Docker images.
-2.  Start all defined services in the `docker-compose.yml` file.
-
-
-### 4. Accessing Services
-
--   **Application**: [http://localhost:8000](http://localhost:8000/) (Update the port as per your configuration.)
--   **Database**: Connect using a database client at `localhost:5432` (adjust based on `docker-compose.yml`).
-
-### 5. Stopping the Services
-
-To stop the services, run:
-
-```bash
-docker-compose down
-```
-This will stop and remove the containers, but volumes will persist.
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 ---
 
-## Usage
+## Usage - Backend
 
 ### Running the CLI
 Start the interactive CLI:
 ```bash
-docker-compose up --build
+gurnicorn backend:main:app -bind 0.0.0.0:8000 -k uvicorn.workers.UvicornWorker
 ```
 
-## Troubleshooting
+## Configuration
 
-### Rebuilding Images
+Set up your API keys and preferences in a `.env` file base on .env.sample:
 
-If you make changes to the `Dockerfile` or `docker-compose.yml`, rebuild the images:
+You can also modify the `config.json` file to customize the behavior of the CLI and model connections.
 
-```bash
-docker-compose up --build
-
-```
-
-### Checking Logs
-
-Use the following command to check logs for all services:
-
-```bash
-docker-compose logs -f
-
-```
-
-### Removing Volumes
-
-If you need to reset the data, use:
-
-```bash
-docker-compose down -v
-
-```
+---
 
 ## Tools and Libraries Used
 
@@ -106,6 +58,17 @@ docker-compose down -v
 - **Alembic**: For orm database migration .
 - **ByteScale**: For File upload
 ---
+
+## Migrate database with [Alembic](https://alembic.sqlalchemy.org/en/latest/index.html) 
+ 
+- Setting PYTHONPATH = currentPath to environment
+ `export PYTHONPATH=${currentPath}`
+- Work directory : `/app`
+- Auto generate version (auto detect models change): `alembic revision --autogenerate -m "your_text"` --> a new version will be created in `migration/versions/` (commands are auto generated so double check is needed) 
+- Upgrade database to version: `alembic upgrade ${version}` version is revision number or 'head' text
+- Downgrade database to version: `alembic downgrade ${version}` version is revision number or 'head' text
+- Skip database migration to version: `alembic stamp ${version}` version is revision number or 'head' text
+
 
 ## How It Works
 
@@ -129,10 +92,22 @@ docker-compose down -v
 
 ```plaintext
 mini-llm/
-├── backend              # backend directory
-├── frontend             # frontend directory
-├── .env.sample          # Env sample
-├── docker.compose       # Docker compose file
+├── commands              
+├── constants            
+├── migrations            
+├── core            
+├── models            
+├── queries            
+├── routes            
+├── serializers            
+├── services           
+├── utils           
+├── .env.sample          
+├── Dockerfile       
+├── requirements.txt       
+├── alembic.ini       
+├── __init__.py       
+├── responses.py       
 └── README.md            # Project documentation
 ```
 

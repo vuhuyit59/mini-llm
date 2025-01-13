@@ -1,0 +1,52 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "incremental": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution":"node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "@/constants/*": ["constants/*"],
+      "@/constants": ["constants"],
+      "@/components/*": ["components/*"],
+      "@/components": ["components"],
+      "@/hooks/*": ["hooks/*"],
+      "@/hooks": ["hooks"],
+      "@/helpers/*": ["helpers/*"],
+      "@/helpers": ["helpers"],
+      "@/utils": ["utils"],
+      "@/utils/*": ["utils/*"],
+      "@/styles": ["styles"],
+      "@/styles/*": ["styles/*"],
+      "@/grapql": ["grapql"],
+      "@/grapql/*": ["grapql/*"],
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+}

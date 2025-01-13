@@ -1,0 +1,97 @@
+# docker-compose.yml
+
+version: '3.7'
+
+services:
+  postgres:
+    image: postgres
+    restart: always
+    ports:
+      - ${POSTGRES_PUBLIC_PORT}:5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ./ai_data:/var/lib/postgresql/data/
+    networks:
+      - network1
+
+  rabbitmq_host:
+    image: rabbitmq:3.8.9
+    ports:
+      - '15672:15672'
+      - '${RABBITMQ_PORT}:5672'
+    restart: always
+    networks:
+      - network1
+
+  api-migration:
+    image: ${API_IMAGE_URL}
+    build: backend
+    volumes:
+      - .:/backend
+    command: bash -c "cd backend && alembic upgrade head"
+    links:
+      - postgres
+    depends_on:
+      - postgres
+    networks:
+      - network1
+    env_file:
+      - .env
+
+  web_app:
+    image: mini_llm_web_app
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3334:3000"
+    networks:
+      - network1
+    env_file:
+      - .env
+
+  api:
+    image: ${API_IMAGE_URL}
+    build: backend
+    volumes:
+      - .:/backend
+    ports:
+      - "${API_PUBLIC_PORT}:8000"
+    restart:
+      unless-stopped
+    depends_on:
+      - postgres
+      - rabbitmq_host
+    links:
+      - postgres
+      - rabbitmq_host
+    networks:
+      - network1
+    env_file:
+      - .env
+
+  create_ai_video_task:
+    image: ${API_IMAGE_URL}
+    build: backend
+    volumes:
+      - .:/backend
+    command:  bash -c "export PYTHONPATH="/backend" && python -u backend/commands/create_ai_video_task_consumer.py"
+    restart:
+      unless-stopped
+    depends_on:
+      - postgres
+      - rabbitmq_host
+    links:
+      - postgres
+      - rabbitmq_host
+    networks:
+      - network1
+    env_file:
+      - .env
+
+
+networks:
+  network1:

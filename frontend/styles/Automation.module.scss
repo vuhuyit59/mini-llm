@@ -1,0 +1,55 @@
+
+.automation_wrapper {
+  max-height: 90vh;
+  padding: 30px;
+
+  .automation_container{
+    padding: 20px;
+
+    .postListWrapper{
+      padding: 20px;
+      width: 100%;
+      .postItem{
+        padding: 10px;
+        border: 1px dotted;
+        margin-bottom: 5px;
+        .postItemSection{
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 10px;
+          .postItemSectionName{
+            font-weight: bold;
+          }
+        }
+        font-size: 16px;
+
+        .postItemName{
+          font-size: 14px;
+          padding: 10px;
+        }
+      }
+    }
+
+  }
+}
+.automation_form_wrapper{
+  display: flex;
+  flex-direction: column;
+
+  .form_input{
+    margin-top: 20px;
+  }
+  .form_input_error {
+    :global{
+      .MuiOutlinedInput-notchedOutline{
+        border-color: red;
+      }
+    }
+  }
+  .formInputErrorMessage {
+    padding: 5px 10px;
+    color: red;
+  }
+}

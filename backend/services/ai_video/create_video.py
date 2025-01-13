@@ -3,6 +3,9 @@ from moviepy import concatenate_videoclips, AudioFileClip, ImageClip, \
 from moviepy.video.fx import Resize, CrossFadeIn, CrossFadeOut
 from itertools import cycle, islice
 import os
+
+from backend.services.bytescale import upload_file
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 video_width, video_height = 1024, 1024
@@ -50,8 +53,12 @@ def create_video(image_paths, voice_paths):
         video.write_videofile(output_path, fps=24, audio_codec="aac")
         for x in voice_paths + image_paths:
             os.remove(x)
-        return ""
+
+        # Upload video
+        with open(output_path, "rb") as file:
+            file_url = upload_file(file)
+            os.remove(output_path)
+            return file_url
     except Exception as e:
         print("create_video failed ", e)
         return None
-
